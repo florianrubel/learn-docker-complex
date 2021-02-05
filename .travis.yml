@@ -1,0 +1,34 @@
+language: generic
+sudo: required
+services:
+    - docker
+
+before_install:
+    - docker build -t florianrubel/learn-docker-complex-react-test -f ./client/Dockerfile.dev ./client
+
+script:
+    - docker run -e CI=true florianrubel/learn-docker-complex-react-test npm test -- --coverage
+
+after_success:
+    - docker build -t florianrubel/learn-docker-complex-client ./client
+    - docker build -t florianrubel/learn-docker-complex-nginx ./nginx
+    - docker build -t florianrubel/learn-docker-complex-server ./server
+    - docker build -t florianrubel/learn-docker-complex-worker ./worker
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    - docker push florianrubel/learn-docker-complex-client
+    - docker push florianrubel/learn-docker-complex-nginx
+    - docker push florianrubel/learn-docker-complex-server
+    - docker push florianrubel/learn-docker-complex-worker
+
+
+#deploy:
+#    provider: elasticbeanstalk
+#    region: "eu-central-1"
+#    app: "learn-docker-complex"
+#    env: "learn-docker-complex"
+#    bucket_name: "elasticbeanstalk-eu-central-1-639297522499"
+#    bucket_path": "learn-docker-react"
+#    on:
+#        branch: master
+#    access_key_id: $AWS_ACCESS_KEY_DEACTIVATED
+#    secret_access_key: $AWS_SECRET_KEY_DEACTIVATED
